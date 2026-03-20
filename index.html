@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wikipedia Attention Peaks</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <header id="app-header">
+        <div class="header-content">
+            <h1>Wikipedia Attention Peaks</h1>
+            <p class="subtitle">What does collective attention look like over time? Explore how interest in topics spikes and fades across Wikipedia.</p>
+        </div>
+        <div class="header-controls">
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle color mode" title="Toggle color mode">
+                <svg viewBox="0 0 48 48" role="img" aria-hidden="true">
+                    <circle class="toggle-sun" cx="24" cy="24" r="10" />
+                    <path class="toggle-moon" d="M30 24a9 9 0 0 1-9 9 9 9 0 0 1 0-18 8.5 8.5 0 0 0 9 9z" />
+                    <g class="toggle-rays">
+                        <line x1="24" y1="4" x2="24" y2="10" />
+                        <line x1="24" y1="38" x2="24" y2="44" />
+                        <line x1="4" y1="24" x2="10" y2="24" />
+                        <line x1="38" y1="24" x2="44" y2="24" />
+                        <line x1="8" y1="8" x2="12" y2="12" />
+                        <line x1="36" y1="36" x2="40" y2="40" />
+                        <line x1="8" y1="40" x2="12" y2="36" />
+                        <line x1="36" y1="12" x2="40" y2="8" />
+                    </g>
+                </svg>
+            </button>
+            <button id="tour-btn" class="btn btn-tour">
+                <span class="btn-icon">&#9654;</span> Guided Tour
+            </button>
+            <button id="reset-btn" class="btn btn-reset">
+                <span class="btn-icon">&#8634;</span> Reset View
+            </button>
+        </div>
+    </header>
+
+    <main id="app-main">
+        <div class="layout">
+            <!-- Left sidebar: topic selector -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h2>Topics</h2>
+                    <input type="text" id="topic-search" placeholder="Search topics..." autocomplete="off">
+                </div>
+                <div class="theme-list" id="theme-list">
+                    <!-- Populated by JS -->
+                </div>
+            </aside>
+
+            <!-- Main chart area -->
+            <section class="chart-area" id="chart-area">
+                <!-- Tour overlay -->
+                <div id="tour-overlay" class="tour-overlay hidden">
+                    <div class="tour-card">
+                        <div class="tour-step-indicator" id="tour-step-indicator"></div>
+                        <h3 id="tour-title"></h3>
+                        <p id="tour-text"></p>
+                        <div class="tour-nav">
+                            <button id="tour-prev" class="btn btn-sm">&#9664; Prev</button>
+                            <button id="tour-next" class="btn btn-sm">Next &#9654;</button>
+                            <button id="tour-close" class="btn btn-sm btn-reset">Close</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info bar showing active topics -->
+                <div class="active-topics-bar" id="active-topics-bar">
+                    <span class="bar-label">Active:</span>
+                    <div class="active-chips" id="active-chips">
+                        <span class="placeholder-text">Click topics in the sidebar to begin exploring</span>
+                    </div>
+                </div>
+
+                <!-- Main time series chart -->
+                <div class="chart-container" id="main-chart"></div>
+
+                <!-- Brush context chart -->
+                <div class="context-chart-container" id="context-chart">
+                    <div class="context-label">Drag below to zoom into a time range</div>
+                </div>
+
+                <!-- Annotations toggle -->
+                <div class="annotation-toggle">
+                    <label>
+                        <input type="checkbox" id="show-annotations" checked>
+                        Show story annotations
+                    </label>
+                </div>
+            </section>
+
+            <!-- Right sidebar: spike detector -->
+            <aside class="sidebar sidebar-right" id="spike-panel">
+                <div class="sidebar-header">
+                    <h2>Spike Detector</h2>
+                    <p class="spike-desc">Largest day-over-day increases in the current view</p>
+                </div>
+                <div class="spike-list" id="spike-list">
+                    <p class="placeholder-text">Add topics to see spikes</p>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <footer id="app-footer">
+        <p>Data source: <a href="https://wikimedia.org/api/rest_v1/" target="_blank">Wikimedia Foundation Analytics API</a> (pageviews, Jan 2020 &ndash; Dec 2024).
+        Inspired by <a href="https://nameberry.com/namegraphs" target="_blank">NameGrapher</a> and explorable explanations.
+        Built with <a href="https://d3js.org" target="_blank">D3.js</a> for CSC316 Assignment 3.</p>
+    </footer>
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip hidden"></div>
+
+    <!-- Layout sizing script: runs before chart JS to set explicit pixel heights -->
+    <script>
+    function computeLayout() {
+        var headerH = document.getElementById('app-header').offsetHeight;
+        var footerH = document.getElementById('app-footer').offsetHeight;
+        var mainH = window.innerHeight - headerH - footerH;
+        if (mainH < 400) mainH = 400;
+        document.getElementById('app-main').style.height = mainH + 'px';
+
+    }
+    computeLayout();
+    window.addEventListener('resize', computeLayout);
+    </script>
+
+    <script src="js/annotations.js"></script>
+    <script src="js/spikes.js"></script>
+    <script src="js/chart.js"></script>
+    <script src="js/tour.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

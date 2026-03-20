@@ -1,0 +1,75 @@
+Assignment 3: Interactive Visualization
+Background
+For this assignment, you will use the D3 skills you’ve gained over the semester to individually implement an interactive and animated visualization. You will build a visualization that enables interactive exploration or storytelling of a dataset of your own choosing and deploy it on the web.
+
+This assignment has two goals: (1) we want to assess your ability to implement interaction and animation techniques for visualizations individually; and (2) we want you to think carefully about the effectiveness of specific interaction and animation techniques for your chosen data domain. For example, the zipdecode and NameGrapher applications apply the interactive technique of dynamic queries – first explored in the HomeFinder application – to the problem of uncovering patterns in zip codes and baby names. Similarly, interaction and animation techniques have also been very effectively used for explorable explanations, including Kernel Density Estimation (KDE) and machine learning concepts.
+
+A critical challenge will be scoping the assignment such that you can complete it within approximately 2-3 weeks (any more time than this should ideally be spent working on your final projects). Focus on designing a limited yet compelling visualization that enables interactive exploration along a few critical dimensions, and then layer on additional complexity. The NameGrapher application is a nice example that uses a simple but elegant interaction design to enable engaging explorations. A tightly-focused, well-implemented interactive graphic is much preferred to a sprawling design that attempts too much!
+
+Your Tasks
+Design an interactive graphic (with any necessary animation techniques) to explore or understand a compelling question for a dataset of your own choosing. If you wish, you may use your dataset from A1, although you may need to add in synthetic data in order to have a dataset large enough to warrant interactive visualization (you can consider using an LLM to help you generate synthetic data).
+
+In order to determine what subset of the data and which interactive options are most promising, we encourage you to perform additional exploratory analysis. What aspects of the data reveal the most interesting discoveries or stories? Do not feel obligated to try to convey everything about the data: focus on a compelling subset.
+
+Your graphic must include interactions and animations that enable exploration or storytelling. Possible techniques include panning, zooming, brushing, details-on-demand (e.g., tooltips), dynamic query filters, and selecting different measures to display. You are free to also consider highlights, annotations, or other narrative features intended to draw attention to particular items of interest and provide additional context.
+
+Implement your graphic in D3.js and deploy it to the web. You may use plug-ins for JS and D3 provided your graphic does not require customized server-side support; you should simply load data from a static data file or public web API.
+
+You should use GitHub pages to host your visualization from your project repository. We recommend keeping everything (development files and website) in your main branch: either serve your website from the root folder or from the /docs folder. Your repo must also contain the (unobfuscated) source code for your visualization.
+
+After you have implemented and deployed your interactive visualization, you will complete a write-up with the following components:
+
+A rationale for your design decisions. How did you choose your particular visual encodings, interaction, and animation techniques? What alternatives did you consider and how did you arrive at your ultimate choices?
+An overview of your development process. Describe your working process, including the use of LLMs in helping you write D3 code (if you choose to use them). For the commentary on the development process, consider including answers to the following questions: Roughly how much time did you spend developing your application (in people-hours)? If you used an LLM, did you feel like you were comfortable coding like this? What aspects took the most time?
+Remember to acknowledge all appropriate sources not just in your write-up but also directly on your visualization itself (including the source of your data, and any example visualization you drew inspiration from). The write-up should be no longer than two pages long (you are free to use your own spacing and font size conventions, but please be reasonable).
+
+Peer Critique (Thurs, 03/19)
+During class time on Thursday 03/19 (3:00pm EST), we will split the class into multiple parallel sessions to demo your A4 work so far and conduct peer design critiques. You MUST have a minimum viable working prototype by this time. The prototype need not be feature-complete or fully polished, but it should demonstrate the core visual encoding, interactive, and/or animated ideas you wish to ultimately include.
+
+During the peer review, you should be ready to answer the following questions (approximately 5 minutes of sharing):
+
+(~1 min) A short introduction to your dataset and goals of your project: what is it that your visualization is trying to help a reader with, and why is it important?
+(~1 min) A demonstration of your prototype so far.
+(~1-1.5 mins) A discussion of some of the key design decisions you’ve made so far (e.g., did you do any exploratory data analysis and did it reveal something interesting? Why did you pick these particular visual encodings, or interaction and animation techniques? What alternative ideas did you explore or are you considering? etc.).
+(~30 secs) A brief list of questions that you would like your peers in the class to comment on as part of their critique. After each presentation, we will have a 1-2 minute Q&A session for your peer reviewers to ask questions.
+During this class, each of you will also be responsible for critiquing three projects. We will do this during class time. For each project, we would like you to not only pay close attention to the presentation but also spend some time interacting with the visualization itself. You should then compose a critique following the structure we’ve used in class (“I like… I wish… What if…?”) and cover the following concerns:
+
+Visual Encodings. Are expressive and effective visual encodings applied? How well do they reveal the most important features or trends of the underlying data? Is critical data easily seen, or is it unnecessarily “hidden” and only revealed in response to interaction? Is the target audience likely to understand the visualization?
+Interaction & Animation Techniques. Do the supported interaction and animation techniques enable more effective discovery of interesting trends, patterns, or outliers? Do they engage the viewer in a process of meaningful exploration or learning? Are they well-implemented, without notable performance issues or usability problems?
+Design Quality. Assess the overall design quality in terms of organization and presentation. Are elements appropriately titled or labeled? Is there appropriate spacing, layout, legible type, and other forms of design styling? Is it clear where to begin viewing/interacting with the design? Is the overall display confusing or cluttered? How successful is the prototype in meeting the intended goals?
+Critiques should be detailed enough to be actionable but brief. Don’t forget to share your critiques with your classmates (you might want to share a Google Doc with them). Critiques can be submitted on MarkUs. We will grade your critiques on how thoughtfully you’ve engaged with your classmate’s visualization, and how constructive and actionable your feedback is.
+
+Final Submission (Fri, 03/27)
+After the peer review session, you will then have until Friday 03/27, 11:59 pm EST to improve your project based on the feedback of your peers, as well as continue to implement and polish any features that did not make it for the MVP submission. You may use late days to extend this deadline. Make your final submission on Markus. The final submission should consist of a complete working prototype (provided as a URL) and the writeup as detailed above. Your visualization should be accessible on GitHub pages using a URL of the form: https://csc316-student.github.io/cool-interactive-vis/.
+
+Grading
+Your grade in this assignment will be broken down into three components:
+
+The Visualization
+The visualization is scored out of 15 points. Visualizations that squarely meet the requirements for the assignment will receive a score of 12 out of 15. Going beyond the call of duty can net additional points, for example:
+
+advanced interaction or animation techniques
+novel visualization elements
+effective multi-view coordination
+thoughtful and elegant graphic design
+insightful & engaging exploration or narrative experience
+Point deductions will be made when projects suffer from:
+
+errors or broken features
+clearly ineffective visual encodings
+lack of exploratory or narrative interaction or animation techniques
+overly simplistic or distracting interaction or animation techniques
+confusing interface design
+incomplete or insufficient write-up
+The In-Class Peer Review Presentation
+Presentations will be graded on a 2-point scale as evaluated by one of your TA’s. We will take a look at the progress of your visualization so far and maybe ask 1-2 questions (e.g., did your demo have a narrative arc, did you highlight interesting insights your visualization helps uncover, etc.).
+
+Peer Critique
+Each critique you write will be worth a point, for a total of 3 points. We will assess how thoughtfully you’ve engaged with the visualization, and how constructive and actionable your feedback is. Fractions of a point will be deducted for critiques that are shallow or do not offer much constructive feedback.
+
+Submission Details/Checklist
+Please make your final submission on Markus. Make sure to include the following:
+
+GitHub pages URL to your final deployed visualization.
+Your write-up for the interactive visualization project (max. 2 pages)
+You may want to test your visualization on a few devices and browsers (we will use Chrome or Firefox in our evaluations) to ensure there are no technical issues in advance of the final submission deadline.
