@@ -747,9 +747,14 @@ class AttentionChart {
         this.render();
     }
 
-    highlightTopic(article) {
+    highlightTopic(article, alsoVisible) {
+        const keep = new Set([article]);
+        if (alsoVisible) {
+            (Array.isArray(alsoVisible) ? alsoVisible : [alsoVisible])
+                .forEach(a => keep.add(a));
+        }
         this.linesG.selectAll(".line-path")
-            .classed("faded", d => d.article !== article);
+            .classed("faded", d => !keep.has(d.article));
     }
 
     unhighlightAll() {

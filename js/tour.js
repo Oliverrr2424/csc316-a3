@@ -26,7 +26,12 @@ class GuidedTour {
             text: a.text,
             article: a.article,
             date: a.date,
+            insight: a.insight || null,
+            compareTopic: a.compareTopic || null,
+            compareLabel: a.compareLabel || null,
         }));
+
+        this._tourCompareTopics = new Set();
 
         this.takeaway = "Notice that crises (like COVID, Ukraine) spike faster and higher, while entertainment topics (Barbie, Squid Game) often have longer tails of sustained curiosity.";
         this._initDrag();
@@ -46,6 +51,7 @@ class GuidedTour {
         this.overlay.classed("hidden", true);
         this._clearHighlights();
         this._resetCardPosition();
+        this._tourCompareTopics.clear();
     }
 
     next() {
@@ -133,9 +139,32 @@ class GuidedTour {
 
         this.overlay.select(".tour-takeaway").remove();
 
+        // Render insight block
+        this.card.select(".tour-insight").remove();
+        this.card.select(".tour-compare-label").remove();
+        if (step.insight) {
+            this.card
+                .insert("div", ".tour-nav")
+                .attr("class", "tour-insight")
+                .text(step.insight);
+        }
+
+        // Add comparison topic if specified
+        if (step.compareTopic) {
+            this.addTopicFn(step.compareTopic);
+            this._tourCompareTopics.add(step.compareTopic);
+            if (step.compareLabel) {
+                this.card
+                    .insert("div", ".tour-nav")
+                    .attr("class", "tour-compare-label")
+                    .text(step.compareLabel);
+            }
+        }
+
+        // Add main topic
         this.addTopicFn(step.article);
 
-        this.chart.highlightTopic(step.article);
+        this.chart.highlightTopic(step.article, step.compareTopic || undefined);
 
         const d = d3.timeParse("%Y%m%d")(step.date);
         if (d) {
@@ -164,6 +193,8 @@ class GuidedTour {
         this.titleEl.text("What did you notice?");
         this.textEl.text("");
 
+        this.card.select(".tour-insight").remove();
+        this.card.select(".tour-compare-label").remove();
         this.overlay.select(".tour-takeaway").remove();
 
         d3.select(".tour-card").append("div")
