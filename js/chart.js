@@ -8,13 +8,13 @@ const THEME_COLORS = {
     "Disasters & Crises": "#f783ac",
 };
 
-// Per-topic color palette (within each theme, distribute shades)
+// Per-topic color palette (within each theme, same family with subtle variation)
 const TOPIC_PALETTES = {
-    "World Events": ["#ff6b6b","#e8534b","#ff8787","#c44040","#ff9e9e","#d95555","#ffb3b3","#b33030","#ffc9c9","#a02020"],
-    "Science & Technology": ["#51cf66","#40c057","#69db7c","#2fb344","#8ce99a","#37b24d","#a9e34b","#2e9e3e","#b2f2bb","#268a35"],
-    "Entertainment": ["#ffd43b","#fab005","#ffe066","#f59f00","#ffec99","#e67700","#fff3bf","#d96c00","#fff9db","#cc5de8"],
-    "People": ["#74c0fc","#4dabf7","#a5d8ff","#339af0","#d0ebff","#228be6","#99d1ff","#1c7ed6","#bbd8f5","#1864ab"],
-    "Disasters & Crises": ["#f783ac","#e64980","#faa2c1","#d6336c","#fcc2d7","#c2255c","#ffdae9","#a61e4d","#ffdeeb","#862e52"],
+    "World Events": ["#ff6b6b", "#ff8787", "#fa5252", "#ff9f9f", "#f06565", "#e03131", "#ffb3b3", "#c92a2a", "#ff7b7b", "#b02525"],
+    "Science & Technology": ["#51cf66", "#69db7c", "#40c057", "#8ce99a", "#37b24d", "#2f9e44", "#a9e34b", "#74d680", "#2b8a3e", "#b2f2bb"],
+    "Entertainment": ["#ffd43b", "#ffe066", "#fab005", "#ffec99", "#f59f00", "#fcc419", "#fff3bf", "#e67700", "#ffd86b", "#d9480f"],
+    "People": ["#74c0fc", "#a5d8ff", "#4dabf7", "#d0ebff", "#339af0", "#228be6", "#99d1ff", "#1c7ed6", "#bbdefb", "#1864ab"],
+    "Disasters & Crises": ["#f783ac", "#faa2c1", "#e64980", "#fcc2d7", "#d6336c", "#f06595", "#ffdeeb", "#c2255c", "#ffb3c6", "#a61e4d"],
 };
 
 class AttentionChart {
@@ -26,14 +26,12 @@ class AttentionChart {
         this.brushExtent = null;
         this.tooltipLocked = false;
         this.showAnnotations = true;
-        this.viewMode = "raw";
-        this.focusedArticle = null;
-        this.focusedAnnotationKey = null;
         this.onBrushChange = null;
+        this.scaleMode = 'raw';
         this.parseDate = d3.timeParse("%Y%m%d");
         this.formatDateStr = d3.timeFormat("%Y%m%d");
 
-        this.margin = { top: 20, right: 30, bottom: 30, left: 65 };
+        this.margin = { top: 50, right: 30, bottom: 30, left: 65 };
         this.ctxMargin = { top: 2, right: 30, bottom: 50, left: 65 };
 
         this._initChart();
@@ -89,7 +87,7 @@ class AttentionChart {
             .attr("x", -this.height / 2)
             .attr("y", -50)
             .attr("text-anchor", "middle")
-            .attr("fill", this._getThemeColor("--text-muted", "#8b8fa3"))
+            .attr("fill", "var(--text-muted)")
             .attr("font-size", "0.75rem")
             .text("Daily pageviews");
 
@@ -98,8 +96,7 @@ class AttentionChart {
             .attr("clip-path", "url(#chart-clip)");
 
         this.annotationsG = this.g.append("g")
-            .attr("class", "annotations-group")
-            .attr("clip-path", "url(#chart-clip)");
+            .attr("class", "annotations-group");
 
         this.crosshairG = this.g.append("g").attr("class", "crosshair").style("display", "none");
         this.crosshairG.append("line")
@@ -154,44 +151,6 @@ class AttentionChart {
         this.tooltip = d3.select("#tooltip");
     }
 
-    _getThemeColor(variableName, fallback) {
-        const value = getComputedStyle(document.body).getPropertyValue(variableName).trim();
-        return value || fallback;
-    }
-
-    _getDisplayValue(topic, datum) {
-        if (this.viewMode === "indexed") {
-            return topic._peakViews > 0 ? (datum.views / topic._peakViews) * 100 : 0;
-        }
-        return datum.views;
-    }
-
-    _formatDisplayValue(topic, datum) {
-        const value = this._getDisplayValue(topic, datum);
-        if (this.viewMode === "indexed") {
-            return `${d3.format(".1f")(value)} indexed`;
-        }
-        return `${formatNumber(value)} views`;
-    }
-
-    _formatYAxisTick(value) {
-        if (this.viewMode === "indexed") {
-            return d3.format(".0f")(value);
-        }
-        if (value >= 1e6) return (value / 1e6).toFixed(1) + "M";
-        if (value >= 1e3) return (value / 1e3).toFixed(0) + "K";
-        return value;
-    }
-
-    _applyTopicFocus(article = this.focusedArticle) {
-        this.linesG.selectAll(".line-path")
-            .classed("faded", article ? d => d.article !== article : false)
-            .classed("is-tour-focus", article ? d => d.article === article : false);
-        this.ctxLinesG.selectAll(".ctx-line-path")
-            .classed("faded", article ? d => d.article !== article : false)
-            .classed("is-tour-focus", article ? d => d.article === article : false);
-    }
-
     _setupMouseEvents() {
         const bisectDate = d3.bisector(d => d.date).left;
         const self = this;
@@ -221,13 +180,15 @@ class AttentionChart {
                     const d = !d0 ? d1 : !d1 ? d0 : (xDate - d0.date > d1.date - xDate ? d1 : d0);
 
                     const cx = self.xScale(d.date);
-                    const cy = self.yScale(self._getDisplayValue(topic, d));
+                    const yVal = self.scaleMode === 'indexed'
+                        ? self._getIndexedValue(topic, d.views) : d.views;
+                    const cy = self.yScale(yVal);
 
                     if (cx >= 0 && cx <= self.width && !isNaN(cy)) {
                         self.dotsG.append("circle")
                             .attr("cx", cx).attr("cy", cy).attr("r", 4)
                             .attr("fill", self.topicColorMap[topic.article])
-                            .attr("stroke", self._getThemeColor("--bg", "#0f1117")).attr("stroke-width", 1.5);
+                            .attr("stroke", "var(--dot-stroke)").attr("stroke-width", 1.5);
                         tooltipData.push({ topic, d });
                     }
                 });
@@ -268,15 +229,18 @@ class AttentionChart {
             const prev = this._getPrevDayViews(topic, d);
             const change = prev !== null ? d.views - prev : null;
             const changeStr = change !== null
-                ? `<span style="color:${change >= 0 ? 'var(--success)' : 'var(--danger)'}">${change >= 0 ? '+' : ''}${formatNumber(change)}</span>`
+                ? `<span style="color:var(${change >= 0 ? '--success' : '--danger'})">${change >= 0 ? '+' : ''}${formatNumber(change)}</span>`
                 : '';
-            const displayValue = this._formatDisplayValue(topic, d);
+
+            const displayVal = this.scaleMode === 'indexed'
+                ? this._getIndexedValue(topic, d.views).toFixed(1)
+                : formatNumber(d.views);
+            const displayUnit = this.scaleMode === 'indexed' ? '' : ' views';
 
             html += `
                 <div style="margin-top:6px; border-left: 3px solid ${color}; padding-left: 8px;">
                     <div class="tooltip-title" style="color:${color}">${topic.name}</div>
-                    <div class="tooltip-views">${displayValue}</div>
-                    ${this.viewMode === "indexed" ? `<div class="tooltip-change" style="color:var(--text-muted)">${formatNumber(d.views)} raw views</div>` : ''}
+                    <div class="tooltip-views">${displayVal}${displayUnit}</div>
                     ${changeStr ? `<div class="tooltip-change">vs prev day: ${changeStr}</div>` : ''}
                 </div>`;
         });
@@ -320,6 +284,24 @@ class AttentionChart {
         }
     }
 
+    setScaleMode(mode) {
+        this.scaleMode = mode;
+        this.yLabel.text(mode === 'indexed' ? 'Indexed (peak = 100)' : 'Daily pageviews');
+        this._updateMainDomain();
+        this.render();
+    }
+
+    _getTopicPeak(topic) {
+        if (!topic._peakViews) {
+            topic._peakViews = d3.max(topic._parsed, d => d.views) || 1;
+        }
+        return topic._peakViews;
+    }
+
+    _getIndexedValue(topic, views) {
+        return (views / this._getTopicPeak(topic)) * 100;
+    }
+
     _updateMainDomain() {
         if (this.activeTopics.length === 0) return;
 
@@ -327,15 +309,28 @@ class AttentionChart {
         if (!extent) return;
         this.xScale.domain(extent);
 
-        let maxViews = 0;
-        this.activeTopics.forEach(topic => {
-            topic._parsed.forEach(d => {
-                if (d.date >= extent[0] && d.date <= extent[1]) {
-                    maxViews = Math.max(maxViews, this._getDisplayValue(topic, d));
-                }
+        if (this.scaleMode === 'indexed') {
+            let maxIndexed = 0;
+            this.activeTopics.forEach(topic => {
+                const peak = this._getTopicPeak(topic);
+                topic._parsed.forEach(d => {
+                    if (d.date >= extent[0] && d.date <= extent[1]) {
+                        maxIndexed = Math.max(maxIndexed, (d.views / peak) * 100);
+                    }
+                });
             });
-        });
-        this.yScale.domain([0, maxViews * 1.08]).nice();
+            this.yScale.domain([0, maxIndexed * 1.05]).nice();
+        } else {
+            let maxViews = 0;
+            this.activeTopics.forEach(topic => {
+                topic._parsed.forEach(d => {
+                    if (d.date >= extent[0] && d.date <= extent[1]) {
+                        maxViews = Math.max(maxViews, d.views);
+                    }
+                });
+            });
+            this.yScale.domain([0, maxViews * 1.08]).nice();
+        }
     }
 
     setTopicColor(article, color) {
@@ -355,7 +350,6 @@ class AttentionChart {
                 }))
                 .filter(d => d.date !== null);
             topicData._parsed.sort((a, b) => a.date - b.date);
-            topicData._peakViews = d3.max(topicData._parsed, d => d.views) || 0;
         }
 
         if (this.activeTopics.find(t => t.article === topicData.article)) return;
@@ -389,10 +383,7 @@ class AttentionChart {
                 if (!minDate || first < minDate) minDate = first;
                 if (!maxDate || last > maxDate) maxDate = last;
             }
-            parsed.forEach(d => {
-                const displayValue = this._getDisplayValue(topic, d);
-                if (displayValue > maxViews) maxViews = displayValue;
-            });
+            parsed.forEach(d => { if (d.views > maxViews) maxViews = d.views; });
         });
         this.fullXExtent = [minDate, maxDate];
         this.ctxXScale.domain([minDate, maxDate]);
@@ -429,12 +420,13 @@ class AttentionChart {
         this.yAxisG.transition(t).call(
             d3.axisLeft(this.yScale)
                 .ticks(6)
-                .tickFormat(d => this._formatYAxisTick(d))
+                .tickFormat(d => {
+                    if (this.scaleMode === 'indexed') return d.toFixed(0);
+                    if (d >= 1e6) return (d / 1e6).toFixed(1) + "M";
+                    if (d >= 1e3) return (d / 1e3).toFixed(0) + "K";
+                    return d;
+                })
         );
-
-        this.yLabel
-            .attr("fill", this._getThemeColor("--text-muted", "#8b8fa3"))
-            .text(this.viewMode === "indexed" ? "Indexed pageviews (peak = 100)" : "Daily pageviews");
 
         this.g.select(".grid-y")
             .transition(t)
@@ -445,27 +437,28 @@ class AttentionChart {
                     .tickFormat("")
             );
 
+        const isIndexed = this.scaleMode === 'indexed';
+        const self = this;
+
         const line = d3.line()
-            .defined((d, i, nodes) => {
-                const topic = d3.select(nodes[i].parentNode).datum();
-                return !isNaN(this._getDisplayValue(topic, d));
-            })
+            .defined(d => !isNaN(d.views))
             .x(d => this.xScale(d.date))
-            .y((d, i, nodes) => {
-                const topic = d3.select(nodes[i].parentNode).datum();
-                return this.yScale(this._getDisplayValue(topic, d));
-            })
+            .y(d => this.yScale(d._displayVal !== undefined ? d._displayVal : d.views))
             .curve(d3.curveMonotoneX);
 
         const getDrawData = (topic) => {
             const extent = this.brushExtent || this.fullXExtent;
             if (!extent) return [];
-            const filtered = topic._parsed.filter(d => d.date >= extent[0] && d.date <= extent[1]);
+            let filtered = topic._parsed.filter(d => d.date >= extent[0] && d.date <= extent[1]);
             if (filtered.length > 600) {
                 const step = Math.ceil(filtered.length / 600);
-                return filtered.filter((_, i) => i % step === 0);
+                filtered = filtered.filter((_, i) => i % step === 0);
             }
-            return filtered;
+            if (isIndexed) {
+                const peak = self._getTopicPeak(topic);
+                return filtered.map(d => ({ ...d, _displayVal: (d.views / peak) * 100 }));
+            }
+            return filtered.map(d => ({ ...d, _displayVal: d.views }));
         };
 
         const paths = this.linesG.selectAll(".line-path")
@@ -485,8 +478,6 @@ class AttentionChart {
             .attr("d", d => line(getDrawData(d)))
             .attr("stroke-opacity", 1);
 
-        this._applyTopicFocus();
-
         paths.exit()
             .transition(t)
             .attr("stroke-opacity", 0)
@@ -501,15 +492,9 @@ class AttentionChart {
         }
 
         const line = d3.line()
-            .defined((d, i, nodes) => {
-                const topic = d3.select(nodes[i].parentNode).datum();
-                return !isNaN(this._getDisplayValue(topic, d));
-            })
+            .defined(d => !isNaN(d.views))
             .x(d => this.ctxXScale(d.date))
-            .y((d, i, nodes) => {
-                const topic = d3.select(nodes[i].parentNode).datum();
-                return this.ctxYScale(this._getDisplayValue(topic, d));
-            })
+            .y(d => this.ctxYScale(d.views))
             .curve(d3.curveMonotoneX);
 
         const getCtxData = (topic) => {
@@ -534,8 +519,6 @@ class AttentionChart {
 
         paths.attr("stroke", d => this.topicColorMap[d.article])
             .attr("d", d => line(getCtxData(d)));
-
-        this._applyTopicFocus();
 
         paths.exit().remove();
     }
@@ -569,9 +552,11 @@ class AttentionChart {
             const d1 = topic._parsed[i];
             const nearest = !d0 ? d1 : !d1 ? d0 : (d - d0.date > d1.date - d ? d1 : d0);
             a._x = this.xScale(d);
-            a._y = nearest ? this.yScale(this._getDisplayValue(topic, nearest)) : this.height / 2;
-            a._views = nearest ? nearest.views : 0;
-            a._displayViews = nearest ? this._getDisplayValue(topic, nearest) : 0;
+            const rawViews = nearest ? nearest.views : 0;
+            const yVal = (this.scaleMode === 'indexed' && topic)
+                ? this._getIndexedValue(topic, rawViews) : rawViews;
+            a._y = nearest ? this.yScale(yVal) : this.height / 2;
+            a._views = rawViews;
             a._color = this.topicColorMap[a.article];
         });
 
@@ -590,7 +575,7 @@ class AttentionChart {
         enter.append("circle")
             .attr("r", 5)
             .attr("fill", d => d._color)
-            .attr("stroke", this._getThemeColor("--bg", "#0f1117"))
+            .attr("stroke", "var(--dot-stroke)")
             .attr("stroke-width", 2);
 
         enter.append("line")
@@ -610,8 +595,7 @@ class AttentionChart {
                 <div class="tooltip-title" style="color:${d._color}">${d.title}</div>
                 <div class="tooltip-date">${formatDate(self.parseDate(d.date))}</div>
                 <div style="margin-top:6px;font-size:0.82rem;color:var(--text);">${d.text}</div>
-                <div style="margin-top:4px;font-size:0.8rem;font-weight:700;">${self.viewMode === "indexed" ? `${d3.format(".1f")(d._displayViews)} indexed` : `${formatNumber(d._views)} views`}</div>
-                ${self.viewMode === "indexed" ? `<div class="tooltip-change" style="color:var(--text-muted)">${formatNumber(d._views)} raw views</div>` : ''}
+                <div style="margin-top:4px;font-size:0.8rem;font-weight:700;">${formatNumber(d._views)} views</div>
             `;
             self.tooltip.html(html).classed("hidden", false);
             self.tooltip.style("left", (event.clientX + 16) + "px").style("top", (event.clientY - 10) + "px");
@@ -620,49 +604,19 @@ class AttentionChart {
             if (!self.tooltipLocked) self.tooltip.classed("hidden", true);
         });
 
-        const merged = enter.merge(markers);
-
         enter.transition(t).style("opacity", 1);
 
-        merged.transition(t)
+        markers.transition(t)
             .attr("transform", d => `translate(${d._x},${d._y})`)
             .style("opacity", 1);
-        merged.select("circle")
-            .attr("fill", d => d._color)
-            .attr("stroke", this._getThemeColor("--bg", "#0f1117"));
-        merged.select("text").text(d => d.title);
-        merged
-            .classed("is-tour-focus", d => this.focusedAnnotationKey === d.date + d.article)
-            .classed("is-tour-dim", d => this.focusedArticle && d.article !== this.focusedArticle);
+        markers.select("circle").attr("fill", d => d._color);
+        markers.select("text").text(d => d.title);
 
         markers.exit().transition(t).style("opacity", 0).remove();
     }
 
     setShowAnnotations(show) {
         this.showAnnotations = show;
-        this._renderAnnotations();
-    }
-
-    setViewMode(mode) {
-        this.viewMode = mode;
-        if (this.activeTopics.length > 0) {
-            this._recomputeFullExtent();
-            this._updateMainDomain();
-        }
-        this.render();
-    }
-
-    setTourFocus(article, dateStr) {
-        this.focusedArticle = article;
-        this.focusedAnnotationKey = dateStr ? dateStr + article : null;
-        this._applyTopicFocus();
-        this._renderAnnotations();
-    }
-
-    clearTourFocus() {
-        this.focusedArticle = null;
-        this.focusedAnnotationKey = null;
-        this._applyTopicFocus(null);
         this._renderAnnotations();
     }
 
@@ -714,10 +668,12 @@ class AttentionChart {
     }
 
     highlightTopic(article) {
-        this._applyTopicFocus(article);
+        this.linesG.selectAll(".line-path")
+            .classed("faded", d => d.article !== article);
     }
 
     unhighlightAll() {
-        this._applyTopicFocus();
+        this.linesG.selectAll(".line-path")
+            .classed("faded", false);
     }
 }

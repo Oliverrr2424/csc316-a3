@@ -37,16 +37,18 @@ function computeSpikes(topicData, dateExtent) {
 
 /**
  * Get top K spikes across all active topics.
+ * sortMode: 'absolute' (default) or 'relative'
  */
-function getTopSpikes(activeTopics, dateExtent, k = 15, mode = "absolute") {
+function getTopSpikes(activeTopics, dateExtent, k = 15, sortMode = 'absolute') {
     let allSpikes = [];
     activeTopics.forEach(topic => {
         const spikes = computeSpikes(topic, dateExtent);
         allSpikes = allSpikes.concat(spikes);
     });
 
-    if (mode === "relative") {
-        allSpikes = allSpikes.filter(spike => spike.prevViews > 0 && isFinite(spike.pctChange));
+    if (sortMode === 'relative') {
+        // Filter out spikes with very low base to avoid noise
+        allSpikes = allSpikes.filter(s => s.prevViews >= 100);
         allSpikes.sort((a, b) => b.pctChange - a.pctChange);
     } else {
         allSpikes.sort((a, b) => b.increase - a.increase);

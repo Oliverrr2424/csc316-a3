@@ -7,10 +7,10 @@ const ANNOTATIONS = [
         text: "The World Health Organization declared COVID-19 a global pandemic on March 11, 2020. Wikipedia pageviews surged to millions per day as people sought information.",
     },
     {
-        date: "20210106",
-        article: "January_6_United_States_Capitol_attack",
-        title: "Capitol storming",
-        text: "Supporters of President Trump stormed the U.S. Capitol building on January 6, 2021, leading to a massive spike in Wikipedia searches.",
+        date: "20211110",
+        article: "Bitcoin",
+        title: "Bitcoin tops $68K",
+        text: "Bitcoin reached a new all-time high above $68,000 in November 2021, triggering a sharp spike in Wikipedia interest as crypto speculation intensified.",
     },
     {
         date: "20220224",
@@ -49,10 +49,10 @@ const ANNOTATIONS = [
         text: "Oppenheimer and Barbie opened on the same weekend (July 21, 2023), creating a cultural phenomenon dubbed 'Barbenheimer.'",
     },
     {
-        date: "20230721",
+        date: "20230806",
         article: "Barbie_(film)",
-        title: "Barbie movie opens",
-        text: "The Barbie movie opened alongside Oppenheimer, becoming the highest-grossing film of 2023 with $1.4 billion worldwide.",
+        title: "Barbie passes $1B",
+        text: "Barbie crossed the $1 billion box-office mark in early August 2023, turning sustained hype into a longer second wave of public attention.",
     },
     {
         date: "20210323",

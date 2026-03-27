@@ -12,22 +12,24 @@
         <div class="header-content">
             <h1>Wikipedia Attention Peaks</h1>
             <p class="subtitle">Compare how public attention rises, peaks, and fades across major world events, people, and cultural phenomena using Wikipedia pageviews.</p>
-            <p class="subtitle subtitle-helper">Start with a few topics, brush to zoom into a period, then use Spike Detector to compare sudden jumps or relative surges.</p>
         </div>
         <div class="header-controls">
             <button id="theme-toggle" class="theme-toggle" aria-label="Toggle color mode" title="Toggle color mode">
-                <svg viewBox="0 0 48 48" role="img" aria-hidden="true">
-                    <circle class="toggle-sun" cx="24" cy="24" r="10" />
-                    <path class="toggle-moon" d="M30 24a9 9 0 0 1-9 9 9 9 0 0 1 0-18 8.5 8.5 0 0 0 9 9z" />
-                    <g class="toggle-rays">
-                        <line x1="24" y1="4" x2="24" y2="10" />
-                        <line x1="24" y1="38" x2="24" y2="44" />
-                        <line x1="4" y1="24" x2="10" y2="24" />
-                        <line x1="38" y1="24" x2="44" y2="24" />
-                        <line x1="8" y1="8" x2="12" y2="12" />
-                        <line x1="36" y1="36" x2="40" y2="40" />
-                        <line x1="8" y1="40" x2="12" y2="36" />
-                        <line x1="36" y1="12" x2="40" y2="8" />
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <mask id="moon-mask">
+                        <rect x="0" y="0" width="100%" height="100%" fill="white" />
+                        <circle class="moon-cutout" cx="24" cy="10" r="8" fill="black" />
+                    </mask>
+                    <circle class="sun-body" cx="12" cy="12" r="5" mask="url(#moon-mask)" />
+                    <g class="sun-rays">
+                        <line x1="12" y1="1" x2="12" y2="3" />
+                        <line x1="12" y1="21" x2="12" y2="23" />
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                        <line x1="1" y1="12" x2="3" y2="12" />
+                        <line x1="21" y1="12" x2="23" y2="12" />
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
                     </g>
                 </svg>
             </button>
@@ -61,7 +63,6 @@
                         <div class="tour-step-indicator" id="tour-step-indicator"></div>
                         <h3 id="tour-title"></h3>
                         <p id="tour-text"></p>
-                        <div class="tour-takeaway hidden" id="tour-takeaway"></div>
                         <div class="tour-nav">
                             <button id="tour-prev" class="btn btn-sm">&#9664; Prev</button>
                             <button id="tour-next" class="btn btn-sm">Next &#9654;</button>
@@ -70,38 +71,22 @@
                     </div>
                 </div>
 
+                <!-- Getting started hint -->
+                <div class="getting-started" id="getting-started">
+                    <p><strong>Getting started:</strong> Compare attention patterns between topics. Brush to zoom into a period. Check Spike Detector for the sharpest jumps.</p>
+                </div>
+
                 <!-- Info bar showing active topics -->
                 <div class="active-topics-bar" id="active-topics-bar">
                     <span class="bar-label">Active:</span>
                     <div class="active-chips" id="active-chips">
                         <span class="placeholder-text">Click topics in the sidebar to begin exploring</span>
                     </div>
-                    <span class="active-hint" id="active-hint">Comparison works best with 2–5 topics.</span>
+                    <div class="scale-toggle" id="scale-toggle">
+                        <button class="scale-btn active" data-mode="raw">Raw Views</button>
+                        <button class="scale-btn" data-mode="indexed">Indexed (peak=100)</button>
+                    </div>
                 </div>
-
-                <div class="chart-toolbar">
-                    <div class="toolbar-group">
-                        <span class="toolbar-label">View mode</span>
-                        <div class="segmented-control" id="view-mode-toggle">
-                            <button class="segmented-btn active" data-view-mode="raw">Raw views</button>
-                            <button class="segmented-btn" data-view-mode="indexed">Indexed views (peak = 100)</button>
-                        </div>
-                    </div>
-                    <div class="toolbar-note">Starting comparison: one global crisis and one breakout tech product.</div>
-                </div>
-
-                <section class="insight-panel" id="insight-panel">
-                    <div class="insight-panel-header">
-                        <div>
-                            <div class="toolbar-label">Compare &amp; Learn</div>
-                            <h3 class="insight-title">What stands out in the current window?</h3>
-                        </div>
-                        <div class="insight-window" id="insight-window">Select topics to see comparative takeaways.</div>
-                    </div>
-                    <div class="insight-list" id="insight-list">
-                        <p class="placeholder-text">Add 2–5 topics to generate attention insights.</p>
-                    </div>
-                </section>
 
                 <!-- Main time series chart -->
                 <div class="chart-container" id="main-chart"></div>
@@ -124,11 +109,11 @@
             <aside class="sidebar sidebar-right" id="spike-panel">
                 <div class="sidebar-header">
                     <h2>Spike Detector</h2>
-                    <div class="segmented-control segmented-control-compact" id="spike-mode-toggle">
-                        <button class="segmented-btn active" data-spike-mode="absolute">Absolute</button>
-                        <button class="segmented-btn" data-spike-mode="relative">Relative %</button>
-                    </div>
                     <p class="spike-desc" id="spike-desc">Largest day-over-day increases in the current view</p>
+                    <div class="spike-mode-toggle" id="spike-mode-toggle">
+                        <button class="spike-mode-btn active" data-mode="absolute">Absolute</button>
+                        <button class="spike-mode-btn" data-mode="relative">Relative %</button>
+                    </div>
                 </div>
                 <div class="spike-list" id="spike-list">
                     <p class="placeholder-text">Add topics to see spikes</p>
