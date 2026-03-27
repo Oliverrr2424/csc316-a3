@@ -11,7 +11,8 @@
     <header id="app-header">
         <div class="header-content">
             <h1>Wikipedia Attention Peaks</h1>
-            <p class="subtitle">What does collective attention look like over time? Explore how interest in topics spikes and fades across Wikipedia.</p>
+            <p class="subtitle">Compare how public attention rises, peaks, and fades across major world events, people, and cultural phenomena using Wikipedia pageviews.</p>
+            <p class="subtitle subtitle-helper">Start with a few topics, brush to zoom into a period, then use Spike Detector to compare sudden jumps or relative surges.</p>
         </div>
         <div class="header-controls">
             <button id="theme-toggle" class="theme-toggle" aria-label="Toggle color mode" title="Toggle color mode">
@@ -60,6 +61,7 @@
                         <div class="tour-step-indicator" id="tour-step-indicator"></div>
                         <h3 id="tour-title"></h3>
                         <p id="tour-text"></p>
+                        <div class="tour-takeaway hidden" id="tour-takeaway"></div>
                         <div class="tour-nav">
                             <button id="tour-prev" class="btn btn-sm">&#9664; Prev</button>
                             <button id="tour-next" class="btn btn-sm">Next &#9654;</button>
@@ -74,7 +76,32 @@
                     <div class="active-chips" id="active-chips">
                         <span class="placeholder-text">Click topics in the sidebar to begin exploring</span>
                     </div>
+                    <span class="active-hint" id="active-hint">Comparison works best with 2–5 topics.</span>
                 </div>
+
+                <div class="chart-toolbar">
+                    <div class="toolbar-group">
+                        <span class="toolbar-label">View mode</span>
+                        <div class="segmented-control" id="view-mode-toggle">
+                            <button class="segmented-btn active" data-view-mode="raw">Raw views</button>
+                            <button class="segmented-btn" data-view-mode="indexed">Indexed views (peak = 100)</button>
+                        </div>
+                    </div>
+                    <div class="toolbar-note">Starting comparison: one global crisis and one breakout tech product.</div>
+                </div>
+
+                <section class="insight-panel" id="insight-panel">
+                    <div class="insight-panel-header">
+                        <div>
+                            <div class="toolbar-label">Compare &amp; Learn</div>
+                            <h3 class="insight-title">What stands out in the current window?</h3>
+                        </div>
+                        <div class="insight-window" id="insight-window">Select topics to see comparative takeaways.</div>
+                    </div>
+                    <div class="insight-list" id="insight-list">
+                        <p class="placeholder-text">Add 2–5 topics to generate attention insights.</p>
+                    </div>
+                </section>
 
                 <!-- Main time series chart -->
                 <div class="chart-container" id="main-chart"></div>
@@ -97,7 +124,11 @@
             <aside class="sidebar sidebar-right" id="spike-panel">
                 <div class="sidebar-header">
                     <h2>Spike Detector</h2>
-                    <p class="spike-desc">Largest day-over-day increases in the current view</p>
+                    <div class="segmented-control segmented-control-compact" id="spike-mode-toggle">
+                        <button class="segmented-btn active" data-spike-mode="absolute">Absolute</button>
+                        <button class="segmented-btn" data-spike-mode="relative">Relative %</button>
+                    </div>
+                    <p class="spike-desc" id="spike-desc">Largest day-over-day increases in the current view</p>
                 </div>
                 <div class="spike-list" id="spike-list">
                     <p class="placeholder-text">Add topics to see spikes</p>
