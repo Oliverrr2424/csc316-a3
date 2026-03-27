@@ -289,6 +289,32 @@ class AttentionChart {
         this.yLabel.text(mode === 'indexed' ? 'Indexed (peak = 100)' : 'Daily pageviews');
         this._updateMainDomain();
         this.render();
+        this._toggleIndexedHint(mode === 'indexed');
+    }
+
+    _toggleIndexedHint(show) {
+        let hint = this.container.select('.indexed-hint');
+        if (show) {
+            if (hint.empty()) {
+                hint = this.container.append('div')
+                    .attr('class', 'indexed-hint');
+                hint.html(
+                    '<button class="indexed-hint-close">&times;</button>' +
+                    '<strong>Indexed view</strong> normalizes each topic so its ' +
+                    'all-time peak = 100. Lines with similar shapes won\'t look ' +
+                    'different — the value is in comparing topics with very ' +
+                    'different absolute scales on equal footing.'
+                );
+                hint.select('.indexed-hint-close').on('click', () => {
+                    hint.classed('hidden', true);
+                });
+            }
+            hint.classed('hidden', false);
+        } else {
+            if (!hint.empty()) {
+                hint.classed('hidden', true);
+            }
+        }
     }
 
     _getTopicPeak(topic) {
@@ -300,6 +326,60 @@ class AttentionChart {
 
     _getIndexedValue(topic, views) {
         return (views / this._getTopicPeak(topic)) * 100;
+    }
+
+    _getPaddedYMax(maxValue) {
+        if (!Number.isFinite(maxValue) || maxValue <= 0) {
+            return 1;
+        }
+        const paddingRatio = 0.03;
+        const padded = maxValue * (1 + paddingRatio);
+        return padded > maxValue ? padded : maxValue + 1;
+    }
+
+    _getContextPaddedYMax(maxValue) {
+        if (!Number.isFinite(maxValue) || maxValue <= 0) {
+            return 1;
+        }
+        const paddingRatio = 0.12;
+        const padded = maxValue * (1 + paddingRatio);
+        return padded > maxValue ? padded : maxValue + 1;
+    }
+
+    _getContextYPosition(value) {
+        const safeTopRatio = 0.12;
+        const safeBottomRatio = 0.04;
+        const safeTop = this.ctxHeight * safeTopRatio;
+        const safeBottom = this.ctxHeight * (1 - safeBottomRatio);
+        const domainMax = this.ctxYScale.domain()[1] || 1;
+        const clampedValue = Math.max(0, Math.min(value, domainMax));
+        const normalized = domainMax > 0 ? clampedValue / domainMax : 0;
+        return safeBottom - normalized * (safeBottom - safeTop);
+    }
+
+    _getContextYMax() {
+        const allViews = [];
+
+        this.activeTopics.forEach(topic => {
+            topic._parsed.forEach(d => {
+                if (Number.isFinite(d.views)) {
+                    allViews.push(d.views);
+                }
+            });
+        });
+
+        if (allViews.length === 0) {
+            return 1;
+        }
+
+        allViews.sort((a, b) => a - b);
+        const percentileValue = d3.quantileSorted(allViews, 0.985);
+        const maxViews = allViews[allViews.length - 1];
+        const domainMax = percentileValue && percentileValue > 0
+            ? Math.min(maxViews, percentileValue * 1.15)
+            : maxViews;
+
+        return this._getContextPaddedYMax(domainMax);
     }
 
     _updateMainDomain() {
@@ -319,7 +399,7 @@ class AttentionChart {
                     }
                 });
             });
-            this.yScale.domain([0, maxIndexed * 1.05]).nice();
+            this.yScale.domain([0, this._getPaddedYMax(maxIndexed)]);
         } else {
             let maxViews = 0;
             this.activeTopics.forEach(topic => {
@@ -329,7 +409,7 @@ class AttentionChart {
                     }
                 });
             });
-            this.yScale.domain([0, maxViews * 1.08]).nice();
+            this.yScale.domain([0, this._getPaddedYMax(maxViews)]);
         }
     }
 
@@ -374,7 +454,6 @@ class AttentionChart {
             return;
         }
         let minDate = null, maxDate = null;
-        let maxViews = 0;
         this.activeTopics.forEach(topic => {
             const parsed = topic._parsed;
             if (parsed.length > 0) {
@@ -383,11 +462,10 @@ class AttentionChart {
                 if (!minDate || first < minDate) minDate = first;
                 if (!maxDate || last > maxDate) maxDate = last;
             }
-            parsed.forEach(d => { if (d.views > maxViews) maxViews = d.views; });
         });
         this.fullXExtent = [minDate, maxDate];
         this.ctxXScale.domain([minDate, maxDate]);
-        this.ctxYScale.domain([0, maxViews]);
+        this.ctxYScale.domain([0, this._getContextYMax()]);
     }
 
     resetBrush() {
@@ -494,12 +572,12 @@ class AttentionChart {
         const line = d3.line()
             .defined(d => !isNaN(d.views))
             .x(d => this.ctxXScale(d.date))
-            .y(d => this.ctxYScale(d.views))
+            .y(d => this._getContextYPosition(d.views))
             .curve(d3.curveMonotoneX);
 
         const getCtxData = (topic) => {
             const parsed = topic._parsed;
-            const step = Math.max(1, Math.ceil(parsed.length / 200));
+            const step = Math.max(1, Math.ceil(parsed.length / 400));
             return parsed.filter((_, i) => i % step === 0);
         };
 
@@ -513,11 +591,13 @@ class AttentionChart {
             .attr("class", "ctx-line-path")
             .attr("fill", "none")
             .attr("stroke", d => this.topicColorMap[d.article])
-            .attr("stroke-width", 1)
-            .attr("stroke-opacity", 0.6)
+            .attr("stroke-width", 1.6)
+            .attr("stroke-opacity", 0.9)
             .attr("d", d => line(getCtxData(d)));
 
         paths.attr("stroke", d => this.topicColorMap[d.article])
+            .attr("stroke-width", 1.6)
+            .attr("stroke-opacity", 0.9)
             .attr("d", d => line(getCtxData(d)));
 
         paths.exit().remove();

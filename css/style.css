@@ -648,6 +648,51 @@ main {
     gap: 4px;
 }
 
+/* === Indexed Mode Hint === */
+.indexed-hint {
+    position: absolute;
+    top: 58px;
+    left: 74px;
+    z-index: 30;
+    background: color-mix(in srgb, var(--bg-card) 92%, transparent);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 8px 28px 8px 10px;
+    max-width: 320px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: fadeIn 0.3s ease;
+    pointer-events: auto;
+}
+.indexed-hint strong {
+    color: var(--text);
+    font-weight: 600;
+}
+.indexed-hint-close {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+    line-height: 1;
+    padding: 2px;
+    opacity: 0.6;
+    transition: opacity var(--transition);
+}
+.indexed-hint-close:hover {
+    opacity: 1;
+}
+.indexed-hint.hidden {
+    display: none;
+}
+
 /* === D3 Specific === */
 .axis text {
     fill: var(--text-muted);
